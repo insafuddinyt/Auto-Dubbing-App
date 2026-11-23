@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ডাবিং স্টুডিও</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --card: #ffffff;
+    --ink: #1c1d1f;
+    --muted: #6a6e73;
+    --line: #e3e1da;
+    --accent: #0d7a6b;
+    --accent-ink: #ffffff;
+    --accent-soft: #e2f2ef;
+    --warn: #a4531a;
+    --warn-soft: #fbeedf;
+    --bad: #b3261e;
+    --bad-soft: #fbe7e5;
+    --ok: #1b7a3d;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121413;
+      --card: #1b1e1d;
+      --ink: #ecece8;
+      --muted: #9a9f9c;
+      --line: #2c302e;
+      --accent: #3fb8a5;
+      --accent-ink: #08201c;
+      --accent-soft: #15302b;
+      --warn: #e0a06a;
+      --warn-soft: #33261a;
+      --bad: #f2877f;
+      --bad-soft: #3a1f1d;
+      --ok: #6cd08e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hind Siliguri", "Noto Sans Bengali", "Kalpurush", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  h1 { font-size: 22px; margin: 0; font-weight: 600; letter-spacing: .1px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px; font-size: 14px; font-weight: 500;
+    background: var(--bad-soft); color: var(--bad); white-space: nowrap;
+  }
+  .chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .chip.on { background: var(--accent-soft); color: var(--ok); }
+  .chip.wait { background: var(--warn-soft); color: var(--warn); }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px; margin-bottom: 14px;
+  }
+  .card h2 { font-size: 15px; margin: 0 0 12px; font-weight: 600; color: var(--muted); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  button {
+    font: inherit; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    padding: 10px 16px; border-radius: 10px; min-height: 44px;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:focus-visible, select:focus-visible, input:focus-visible, .drop:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  button.primary:hover:not(:disabled) { filter: brightness(1.06); }
+  button.danger { color: var(--bad); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .hint { font-size: 14px; color: var(--muted); margin: 10px 0 0; }
+  .note { font-size: 14px; border-radius: 10px; padding: 10px 12px; margin: 12px 0 0; }
+  .note.warn { background: var(--warn-soft); color: var(--warn); }
+  .note.bad { background: var(--bad-soft); color: var(--bad); }
+  details { margin-top: 12px; font-size: 14px; color: var(--muted); }
+  summary { cursor: pointer; }
+  .paste { display: flex; gap: 8px; margin-top: 8px; }
+  .paste input { flex: 1; min-width: 0; }
+  input[type=text], select {
+    font: inherit; padding: 10px 12px; border-radius: 10px; min-height: 44px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  }
+  .drops { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .drops { grid-template-columns: 1fr; } }
+  .drop {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    gap: 4px; min-height: 130px; padding: 14px;
+    border: 1.5px dashed var(--line); border-radius: 12px; cursor: pointer;
+    background: transparent; transition: border-color .15s, background .15s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop.filled { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+  .drop .label { font-weight: 600; }
+  .drop .file { font-size: 14px; color: var(--muted); word-break: break-all; }
+  .drop input { display: none; }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  @media (max-width: 560px) { .opts { grid-template-columns: 1fr; } }
+  .opts label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+  .opts select { width: 100%; }
+  .opts input[type=range] { width: 100%; accent-color: var(--accent); min-height: 44px; }
+  .run { margin-top: 16px; }
+  .run button { width: 100%; font-size: 18px; min-height: 52px; }
+  .bar { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; margin-top: 14px; }
+  .bar > div { height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .status { margin-top: 8px; font-size: 14px; color: var(--muted); min-height: 21px; }
+  audio { width: 100%; margin-top: 4px; }
+  .hidden { display: none !important; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>ডাবিং স্টুডিও</h1>
+    <span id="chip" class="chip" role="status" aria-live="polite">অফলাইন</span>
+  </header>
+
+  <section class="card" aria-labelledby="h-connect">
+    <h2 id="h-connect">১. কোলাব কানেক্ট</h2>
+    <div class="row">
+      <button id="btnConnect" class="primary" type="button">কোলাব কানেক্ট করুন</button>
+      <button id="btnDisconnect" class="danger hidden" type="button">ডিসকানেক্ট</button>
+    </div>
+    <p id="connectHint" class="hint">বাটন চাপলে কোলাব একটা ছোট উইন্ডোতে খুলবে। সেখানে একবার <b>Runtime → Run all</b> চাপুন। কয়েক মিনিট পর কোলাবে একটা সবুজ লিংক আসবে, সেটায় ক্লিক করলে এখানে "কানেক্টেড" দেখাবে।</p>
+    <div id="cfgWarn" class="note warn hidden">সাইটের কোডে <code>COLAB_NOTEBOOK_URL</code> এখনো বদলানো হয়নি। <code>public/index.html</code> এর শুরুর দিকে নিজের GitHub নাম বসান।</div>
+    <div id="connErr" class="note bad hidden"></div>
+    <details>
+      <summary>লিংক ক্লিক না হলে এখানে পেস্ট করুন</summary>
+      <div class="paste">
+        <input id="pasteLink" type="text" placeholder="কোলাব থেকে পাওয়া লিংক" autocomplete="off" spellcheck="false" aria-label="কোলাব থেকে পাওয়া লিংক">
+        <button id="btnPaste" type="button">কানেক্ট</button>
+      </div>
+    </details>
+  </section>
+
+  <section class="card" aria-labelledby="h-files">
+    <h2 id="h-files">২. ফাইল দিন</h2>
+    <div class="drops">
+      <label class="drop" id="dropText" tabindex="0">
+        <span class="label">bangla.txt</span>
+        <span class="file" id="fileTextName">বাংলা স্ক্রিপ্ট (.txt) টেনে আনুন বা ক্লিক করুন</span>
+        <input id="fileText" type="file" accept=".txt,text/plain">
+      </label>
+      <label class="drop" id="dropMusic" tabindex="0">
+        <span class="label">music.mp3</span>
+        <span class="file" id="fileMusicName">ব্যাকগ্রাউন্ড মিউজিক (.mp3) টেনে আনুন বা ক্লিক করুন</span>
+        <input id="fileMusic" type="file" accept=".mp3,audio/mpeg,audio/*">
+      </label>
+    </div>
+
+    <div class="opts">
+      <div>
+        <label for="voice">ভয়েস</label>
+        <select id="voice"></select>
+      </div>
+      <div>
+        <label for="musicDb">মিউজিকের ভলিউম: <span id="musicDbVal">-14</span> dB</label>
+        <input id="musicDb" type="range" min="-30" max="-4" step="1" value="-14">
+      </div>
+    </div>
+
+    <div class="run">
+      <button id="btnRun" class="primary" type="button" disabled>▶ শুরু করুন</button>
+    </div>
+    <div class="bar" id="barWrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="প্রগ্রেস"><div id="bar"></div></div>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div id="runErr" class="note bad hidden"></div>
+  </section>
+
+  <section class="card hidden" id="resultCard" aria-labelledby="h-result">
+    <h2 id="h-result">৩. রেজাল্ট</h2>
+    <audio id="player" controls></audio>
+    <div class="row" style="margin-top:12px">
+      <a id="dl" download="final_audio.mp3" class="sr" href="#">ডাউনলোড</a>
+      <button id="btnDownload" class="primary" type="button">⬇ final_audio.mp3 ডাউনলোড</button>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+/* ===================== সেটিংস (এখানে বদলাবেন) ===================== */
+// আপনার পাবলিক নোটবুক রেপোর লিংক। YOUR-GITHUB-USERNAME বদলে নিজের GitHub নাম দিন।
+const COLAB_NOTEBOOK_URL =
+  "https://colab.research.google.com/github/YOUR-GITHUB-USERNAME/colab-starter/blob/main/notebook.ipynb";
+
+// শুধু এই ডোমেইনের সার্ভারেই ফাইল পাঠানো হবে (ভুয়া লিংক থেকে বাঁচতে)।
+// পরে স্থায়ী টানেল নিলে নিজের ডোমেইন এখানে যোগ করবেন, যেমন ".mytool.com"
+const ALLOWED_HOST_SUFFIXES = [".trycloudflare.com"];
+
+const FALLBACK_VOICES = {
+  "bn-BD-NabanitaNeural": "নবনীতা (বাংলাদেশ, মহিলা)",
+  "bn-BD-PradeepNeural": "প্রদীপ (বাংলাদেশ, পুরুষ)",
+  "bn-IN-TanishaaNeural": "তানিশা (ভারত, মহিলা)",
+  "bn-IN-BashkarNeural": "ভাস্কর (ভারত, পুরুষ)"
+};
+const STORE_KEY = "dub_conn_v1";
+
+/* ===================== ছোট সাহায্যকারী ===================== */
+const $ = (id) => document.getElementById(id);
+let conn = null;            // { server, key }
+let files = { text: null, music: null };
+let busy = false;
+let failCount = 0;
+let resultUrl = null;
+
+function store(v) {
+  try { v ? localStorage.setItem(STORE_KEY, JSON.stringify(v)) : localStorage.removeItem(STORE_KEY); } catch (e) {}
+}
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch (e) { return null; }
+}
+function hostAllowed(url) {
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && ALLOWED_HOST_SUFFIXES.some((s) => u.hostname.endsWith(s));
+  } catch (e) { return false; }
+}
+function show(el, on) { el.classList.toggle("hidden", !on); }
+function setErr(el, msg) { el.textContent = msg || ""; show(el, !!msg); }
+function fmtSize(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB"; }
+function headers() { return { "X-Key": conn.key }; }
+async function api(path, opts = {}) {
+  const r = await fetch(conn.server + path, { ...opts, headers: { ...(opts.headers || {}), ...headers() } });
+  if (!r.ok) {
+    let d = "";
+    try { d = (await r.json()).detail || ""; } catch (e) {}
+    const err = new Error(d || "সার্ভার সমস্যা (" + r.status + ")");
+    err.status = r.status;
+    throw err;
+  }
+  return r;
+}
+
+/* ===================== কানেকশন ===================== */
+function parseLink(text) {
+  // কোলাব যে লিংক দেয়: https://সাইট/#server=https://xxx.trycloudflare.com&key=abc
+  let frag = "";
+  const i = text.indexOf("#");
+  frag = i >= 0 ? text.slice(i + 1) : text;
+  const p = new URLSearchParams(frag);
+  const server = (p.get("server") || "").replace(/\/+$/, "");
+  const key = p.get("key") || "";
+  if (!server || !key) return null;
+  if (!hostAllowed(server)) return { error: "এই সার্ভারের ঠিকানা অনুমোদিত নয়।" };
+  return { server, key };
+}
+
+function setConn(c) {
+  conn = c;
+  store(c);
+  failCount = 0;
+  render();
+  if (c) { loadVoices(); ping(); }
+}
+
+function render() {
+  const on = !!conn;
+  const chip = $("chip");
+  chip.className = "chip" + (on ? " on" : "");
+  chip.textContent = on ? "কানেক্টেড" : "অফলাইন";
+  show($("btnConnect"), !on);
+  show($("btnDisconnect"), on);
+  show($("connectHint"), !on);
+  $("btnRun").disabled = !(on && files.text && files.music) || busy;
+}
+
+async function ping() {
+  if (!conn) return;
+  try {
+    const r = await fetch(conn.server + "/health", { cache: "no-store" });
+    if (!r.ok) throw new Error("bad");
+    failCount = 0;
+    setErr($("connErr"), "");
+  } catch (e) {
+    failCount++;
+    if (failCount >= 3 && !busy) {
+      conn = null; store(null); render();
+      setErr($("connErr"), "কোলাবের সাথে যোগাযোগ বন্ধ হয়ে গেছে (সেশন কেটে গেছে)। আবার কানেক্ট করুন।");
+    }
+  }
+}
+setInterval(ping, 6000);
+
+$("btnConnect").addEventListener("click", () => {
+  setErr($("connErr"), "");
+  if (COLAB_NOTEBOOK_URL.includes("YOUR-GITHUB-USERNAME")) show($("cfgWarn"), true);
+  // window.open অবশ্যই ক্লিকের ভেতরেই ডাকতে হবে, নইলে ব্রাউজার পপআপ আটকায়
+  const w = window.open(COLAB_NOTEBOOK_URL, "colab_engine", "popup=yes,width=1100,height=780");
+  if (!w) setErr($("connErr"), "পপআপ আটকে গেছে। ব্রাউজারের অ্যাড্রেস বারে পপআপ অনুমতি দিয়ে আবার চাপুন।");
+});
+
+$("btnDisconnect").addEventListener("click", async () => {
+  if (conn) { try { await api("/shutdown", { method: "POST" }); } catch (e) {} }
+  conn = null; store(null); render();
+  $("status").textContent = "ডিসকানেক্ট হয়েছে। কোলাব সেশন বন্ধ হচ্ছে।";
+});
+
+function pasteConnect() {
+  const r = parseLink($("pasteLink").value.trim());
+  if (!r) return setErr($("connErr"), "লিংকটা সঠিক মনে হচ্ছে না।");
+  if (r.error) return setErr($("connErr"), r.error);
+  setErr($("connErr"), "");
+  $("pasteLink").value = "";
+  setConn(r);
+}
+$("btnPaste").addEventListener("click", pasteConnect);
+$("pasteLink").addEventListener("keydown", (e) => { if (e.key === "Enter") pasteConnect(); });
+
+// অন্য ট্যাবে কানেক্ট হলে এই ট্যাবও জানবে
+window.addEventListener("storage", (e) => {
+  if (e.key !== STORE_KEY) return;
+  const v = load();
+  conn = v; failCount = 0; render();
+  if (v) { loadVoices(); setErr($("connErr"), ""); }
+});
+
+/* ===================== ভয়েস লিস্ট ===================== */
+function fillVoices(map, def) {
+  const sel = $("voice");
+  const cur = sel.value;
+  sel.textContent = "";
+  Object.entries(map).forEach(([id, name]) => {
+    const o = document.createElement("option");
+    o.value = id; o.textContent = name;
+    sel.appendChild(o);
+  });
+  sel.value = map[cur] ? cur : (def && map[def] ? def : Object.keys(map)[0]);
+}
+async function loadVoices() {
+  try {
+    const d = await (await api("/voices")).json();
+    fillVoices(d.voices, d.default);
+  } catch (e) { /* ডিফল্ট লিস্টই থাকবে */ }
+}
+fillVoices(FALLBACK_VOICES, "bn-BD-NabanitaNeural");
+
+/* ===================== ফাইল বাছাই ===================== */
+function bindDrop(zoneId, inputId, nameId, kind, test, placeholder) {
+  const zone = $(zoneId), input = $(inputId), nameEl = $(nameId);
+  function set(f) {
+    if (!f) return;
+    if (!test(f)) { nameEl.textContent = "ভুল ধরনের ফাইল। " + placeholder; return; }
+    files[kind] = f;
+    nameEl.textContent = f.name + " (" + fmtSize(f.size) + ")";
+    zone.classList.add("filled");
+    render();
+  }
+  input.addEventListener("change", () => set(input.files[0]));
+  ["dragenter", "dragover"].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.add("over"); }));
+  ["dragleave", "drop"].forEach((ev) => zone.addEventListener(ev, (e) => { e.preventDefault(); zone.classList.remove("over"); }));
+  zone.addEventListener("drop", (e) => set(e.dataTransfer.files[0]));
+  zone.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); input.click(); } });
+}
+bindDrop("dropText", "fileText", "fileTextName", "text",
+  (f) => /\.txt$/i.test(f.name) || f.type === "text/plain", "শুধু .txt দিন।");
+bindDrop("dropMusic", "fileMusic", "fileMusicName", "music",
+  (f) => /\.mp3$/i.test(f.name) || f.type === "audio/mpeg", "শুধু .mp3 দিন।");
+
+$("musicDb").addEventListener("input", (e) => { $("musicDbVal").textContent = e.target.value; });
+
+/* ===================== কাজ চালানো ===================== */
+function setProgress(p, msg) {
+  $("bar").style.width = p + "%";
+  $("barWrap").setAttribute("aria-valuenow", String(p));
+  if (msg !== undefined) $("status").textContent = msg;
+}
+function upload(form) {
+  return new Promise((resolve, reject) => {
+    const x = new XMLHttpRequest();
+    x.open("POST", conn.server + "/jobs");
+    x.setRequestHeader("X-Key", conn.key);
+    x.upload.onprogress = (e) => {
+      if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 5), "আপলোড হচ্ছে… " + Math.round((e.loaded / e.total) * 100) + "%");
+    };
+    x.onload = () => {
+      let d = {};
+      try { d = JSON.parse(x.responseText); } catch (e) {}
+      if (x.status >= 200 && x.status < 300 && d.id) resolve(d.id);
+      else reject(new Error(d.detail || "আপলোড ব্যর্থ (" + x.status + ")"));
+    };
+    x.onerror = () => reject(new Error("সার্ভারে পৌঁছানো যায়নি। কোলাব চালু আছে কিনা দেখুন।"));
+    x.send(form);
+  });
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+$("btnRun").addEventListener("click", async () => {
+  if (!conn || !files.text || !files.music || busy) return;
+  busy = true; render();
+  setErr($("runErr"), "");
+  show($("resultCard"), false);
+  setProgress(0, "শুরু হচ্ছে…");
+  try {
+    const form = new FormData();
+    form.append("text", files.text, "bangla.txt");
+    form.append("music", files.music, "music.mp3");
+    form.append("voice", $("voice").value);
+    form.append("music_db", $("musicDb").value);
+    const id = await upload(form);
+
+    let misses = 0;
+    for (;;) {
+      await sleep(1500);
+      let j;
+      try {
+        j = await (await api("/jobs/" + id)).json();
+        misses = 0;
+      } catch (e) {
+        if (e.status === 401 || e.status === 404) throw e;
+        if (++misses >= 8) throw new Error("কোলাবের সাথে যোগাযোগ কেটে গেছে।");
+        continue;
+      }
+      setProgress(Math.max(5, j.progress || 0), j.message || "");
+      if (j.status === "error") throw new Error(j.error || "কাজ ব্যর্থ হয়েছে");
+      if (j.status === "done") break;
+    }
+
+    setProgress(100, "রেজাল্ট নামানো হচ্ছে…");
+    const blob = await (await api("/jobs/" + id + "/result")).blob();
+    if (resultUrl) URL.revokeObjectURL(resultUrl);
+    resultUrl = URL.createObjectURL(blob);
+    $("player").src = resultUrl;
+    $("dl").href = resultUrl;
+    show($("resultCard"), true);
+    setProgress(100, "হয়ে গেছে। নিচে শুনুন বা ডাউনলোড করুন।");
+    $("resultCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (e) {
+    setProgress(0, "");
+    setErr($("runErr"), e.message || "কিছু একটা ভুল হয়েছে");
+  } finally {
+    busy = false; render();
+  }
+});
+
+$("btnDownload").addEventListener("click", () => { if (resultUrl) $("dl").click(); });
+
+/* ===================== শুরুতে ===================== */
+// কোলাবের লিংক থেকে এলে (#server=...&key=...) কানেক্ট করি, তারপর ঠিকানা থেকে মুছে ফেলি।
+// true ফেরত দিলে লিংক থেকে কানেক্ট হয়েছে।
+function connectFromHash() {
+  if (location.hash.length <= 1) return false;
+  const r = parseLink(location.hash);
+  history.replaceState(null, "", location.pathname + location.search);
+  if (r && !r.error) { setErr($("connErr"), ""); setConn(r); return true; }
+  setErr($("connErr"), r && r.error ? r.error : "লিংকটা সঠিক মনে হচ্ছে না।");
+  return false;
+}
+window.addEventListener("hashchange", connectFromHash);
+
+(function init() {
+  if (connectFromHash()) return;
+  const saved = load();
+  if (saved && saved.server && saved.key && hostAllowed(saved.server)) setConn(saved);
+  else render();
+})();
+</script>
+</body>
+</html>
