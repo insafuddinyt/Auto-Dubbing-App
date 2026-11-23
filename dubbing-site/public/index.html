@@ -135,7 +135,7 @@
       <button id="btnDisconnect" class="danger hidden" type="button">ডিসকানেক্ট</button>
     </div>
     <p id="connectHint" class="hint">বাটন চাপলে কোলাব একটা ছোট উইন্ডোতে খুলবে। সেখানে একবার <b>Runtime → Run all</b> চাপুন। কয়েক মিনিট পর কোলাবে একটা সবুজ লিংক আসবে, সেটায় ক্লিক করলে এখানে "কানেক্টেড" দেখাবে।</p>
-    <div id="cfgWarn" class="note warn hidden">সাইটের কোডে <code>COLAB_NOTEBOOK_URL</code> এখনো বদলানো হয়নি। <code>public/index.html</code> এর শুরুর দিকে নিজের GitHub নাম বসান।</div>
+    <div id="cfgWarn" class="note warn hidden">নোটবুকের লিংকে এখনো <code>YOUR-GITHUB-USERNAME</code> আছে। <code>public/config.js</code> ফাইলে নিজের GitHub নাম বসান।</div>
     <div id="connErr" class="note bad hidden"></div>
     <details>
       <summary>লিংক ক্লিক না হলে এখানে পেস্ট করুন</summary>
@@ -190,12 +190,13 @@
   </section>
 </main>
 
+<script src="config.js"></script>
 <script>
 "use strict";
 
 /* ===================== সেটিংস (এখানে বদলাবেন) ===================== */
-// আপনার পাবলিক নোটবুক রেপোর লিংক। YOUR-GITHUB-USERNAME বদলে নিজের GitHub নাম দিন।
-const COLAB_NOTEBOOK_URL =
+// নোটবুকের লিংক আসে config.js থেকে (ওই ফাইলেই নিজের GitHub নাম বসাবেন)।
+const COLAB_NOTEBOOK_URL = (window.APP_CONFIG && window.APP_CONFIG.notebookUrl) ||
   "https://colab.research.google.com/github/YOUR-GITHUB-USERNAME/colab-starter/blob/main/notebook.ipynb";
 
 // শুধু এই ডোমেইনের সার্ভারেই ফাইল পাঠানো হবে (ভুয়া লিংক থেকে বাঁচতে)।
