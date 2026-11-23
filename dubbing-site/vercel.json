@@ -1,8 +1,7 @@
 {
   "functions": {
-    "api/engine.js": {
-      "includeFiles": "engine/**"
-    }
+    "api/engine.js": { "includeFiles": "engine/**" },
+    "api/health.js": { "includeFiles": "engine/**" }
   },
   "headers": [
     {

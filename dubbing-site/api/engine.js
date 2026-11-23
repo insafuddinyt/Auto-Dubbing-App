@@ -4,12 +4,8 @@
 // কোলাব নোটবুক এভাবে ডাকে:  GET /api/engine   (header: X-Engine-Key: <key>)
 // উত্তর: { version, files: { "process.py": "...", "server.py": "...", ... } }
 
-const fs = require("fs");
-const path = require("path");
 const crypto = require("crypto");
-
-const ENGINE_DIR = path.join(process.cwd(), "engine");
-const ALLOWED = [".py", ".txt"];
+const { readEngineFiles } = require("./_engine-files");
 
 function sameKey(a, b) {
   const ha = crypto.createHash("sha256").update(String(a)).digest();
@@ -35,18 +31,14 @@ module.exports = (req, res) => {
   }
 
   try {
-    const files = {};
-    for (const name of fs.readdirSync(ENGINE_DIR)) {
-      if (!ALLOWED.includes(path.extname(name))) continue;
-      files[name] = fs.readFileSync(path.join(ENGINE_DIR, name), "utf8");
+    const { files, tried } = readEngineFiles();
+    if (!Object.keys(files).length) {
+      // key ঠিক ছিল, তাই এই তথ্য শুধু আপনাকেই দেখানো হচ্ছে
+      return res.status(500).json({ error: "engine ফোল্ডার পাওয়া যায়নি", tried, cwd: process.cwd() });
     }
-    const version = crypto
-      .createHash("sha256")
-      .update(JSON.stringify(files))
-      .digest("hex")
-      .slice(0, 8);
+    const version = crypto.createHash("sha256").update(JSON.stringify(files)).digest("hex").slice(0, 8);
     return res.status(200).json({ version, files });
   } catch (e) {
-    return res.status(500).json({ error: "engine ফোল্ডার পড়া যায়নি" });
+    return res.status(500).json({ error: "engine পড়তে সমস্যা: " + (e && e.message) });
   }
 };
